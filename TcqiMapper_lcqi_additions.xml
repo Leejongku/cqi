@@ -1,0 +1,156 @@
+<!-- ================================================================
+  교양 Macro-CQI 추가 쿼리
+  TcqiMapper.xml 의 </mapper> 태그 바로 위에 삽입하세요.
+
+  [쿼리 목록]
+  1. findLcqiMaster         - 교양 MCQI_MASTER 상태 조회
+  2. findLcqiSectList       - 교양 MCQI_SECT_DSC 현재연도 조회
+  3. findLcqiPrevSectList   - 전년도 TYPE='03'(이번년도개선계획) 이월용 조회
+  4. mergeLcqiMaster        - 교양 MCQI_MASTER upsert (저장 시 자동 생성)
+  5. deleteLcqiSect         - 교양 SECT_DSC 삭제 (SECT+TYPE 단위)
+  6. insertLcqiSect         - 교양 SECT_DSC 단건 insert
+
+  [설계 메모]
+  - CQI_DIV_CD = '0002' 고정 (교양)
+  - PFLT_ID     = detMngtDscCd (SELF/COMM/PROB/MAJOR/GLOBAL/SWAI/HUM/SCI/ART)
+  - ORGID       = 교양처 조직ID (tcqiSearch.collCd)
+  - 전년도 이월  : TYPE='01' 행은 ServiceImpl에서 전년도 TYPE='03' 결과로 채움
+================================================================ -->
+
+<!-- ─────────────────────────────────────────────────────────────
+  1. 교양 MCQI_MASTER 상태 조회
+   파라미터 : yy, orgid(=collCd), pfltId(=detMngtDscCd)
+   반환     : CamelCaseMap (submitYn, closeYn, submitDm, submitUid, closeDm, ...)
+───────────────────────────────────────────────────────────────── -->
+<select id="findLcqiMaster" resultType="CamelCaseMap">
+    /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findLcqiMaster */
+    SELECT YY
+          ,ORGID
+          ,PFLT_ID
+          ,CQI_DIV_CD
+          ,NVL(SUBMIT_YN, 'N')  AS SUBMIT_YN
+          ,SUBMIT_UID
+          ,TO_CHAR(SUBMIT_DM, 'YYYY.MM.DD HH24:MI') AS SUBMIT_DM
+          ,NVL(CLOSE_YN,  'N')  AS CLOSE_YN
+          ,CLOSE_UID
+          ,TO_CHAR(CLOSE_DM,  'YYYY.MM.DD HH24:MI') AS CLOSE_DM
+          ,INPUT_UID
+          ,TO_CHAR(INPUT_DM, 'YYYY.MM.DD HH24:MI')  AS INPUT_DM
+          ,LTST_UPD_UID
+          ,TO_CHAR(LTST_UPD_DM, 'YYYY.MM.DD HH24:MI') AS LTST_UPD_DM
+      FROM UNIV.MCQI_MASTER
+     WHERE YY         = #{yy}
+       AND ORGID      = #{orgid}
+       AND PFLT_ID    = #{pfltId}
+       AND CQI_DIV_CD = '0002'
+</select>
+
+
+<!-- ─────────────────────────────────────────────────────────────
+  2. 교양 MCQI_SECT_DSC 현재연도 전체 조회
+   파라미터 : yy, orgid, pfltId
+   반환     : List<CamelCaseMap>
+             (cqiSectCd, cqiTypeCd, choiCd, ansTypeCd, cont, sortOrd)
+───────────────────────────────────────────────────────────────── -->
+<select id="findLcqiSectList" resultType="CamelCaseMap">
+    /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findLcqiSectList */
+    SELECT CQI_SECT_CD
+          ,CQI_TYPE_CD
+          ,CHOI_CD
+          ,ANS_TYPE_CD
+          ,CONT
+          ,SORT_ORD
+      FROM UNIV.MCQI_SECT_DSC
+     WHERE YY         = #{yy}
+       AND ORGID      = #{orgid}
+       AND PFLT_ID    = #{pfltId}
+       AND CQI_DIV_CD = '0002'
+     ORDER BY CQI_SECT_CD, CQI_TYPE_CD, SORT_ORD, CHOI_CD
+</select>
+
+
+<!-- ─────────────────────────────────────────────────────────────
+  3. 전년도 교양 SECT_DSC 조회 (이번년도개선계획 TYPE='03' → 이월용)
+   파라미터 : yy (현재연도 → 쿼리 내부에서 -1 처리), orgid, pfltId
+   반환     : List<CamelCaseMap>
+   사용     : ServiceImpl에서 TYPE='01'(전년도개선계획) 항목 세팅에 활용
+───────────────────────────────────────────────────────────────── -->
+<select id="findLcqiPrevSectList" resultType="CamelCaseMap">
+    /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findLcqiPrevSectList */
+    SELECT CQI_SECT_CD
+          ,CQI_TYPE_CD
+          ,CHOI_CD
+          ,ANS_TYPE_CD
+          ,CONT
+          ,SORT_ORD
+      FROM UNIV.MCQI_SECT_DSC
+     WHERE YY         = TO_CHAR(TO_NUMBER(#{yy}) - 1)
+       AND ORGID      = #{orgid}
+       AND PFLT_ID    = #{pfltId}
+       AND CQI_DIV_CD = '0002'
+       AND CQI_TYPE_CD = '03'   /* 이번년도개선계획 → 다음연도 전년도개선계획으로 이월 */
+     ORDER BY CQI_SECT_CD, SORT_ORD, CHOI_CD
+</select>
+
+
+<!-- ─────────────────────────────────────────────────────────────
+  4. 교양 MCQI_MASTER upsert
+   파라미터 : yy, orgid, pfltId, inputUserId, remoteAddr, latestUserId
+   용도     : saveLcqiSectList 호출 시 MASTER 레코드 자동 생성
+───────────────────────────────────────────────────────────────── -->
+<update id="mergeLcqiMaster">
+    /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.mergeLcqiMaster */
+    MERGE INTO UNIV.MCQI_MASTER TGT
+    USING DUAL
+       ON (    TGT.YY         = #{yy}
+           AND TGT.ORGID      = #{orgid}
+           AND TGT.PFLT_ID    = #{pfltId}
+           AND TGT.CQI_DIV_CD = '0002')
+    WHEN MATCHED THEN
+        UPDATE SET LTST_UPD_UID = #{latestUserId}
+                  ,LTST_UPD_DM  = SYSDATE
+                  ,LTST_UPD_IP  = #{remoteAddr}
+    WHEN NOT MATCHED THEN
+        INSERT (YY, ORGID, PFLT_ID, CQI_DIV_CD,
+                INPUT_UID, INPUT_DM, INPUT_IP)
+        VALUES (#{yy}, #{orgid}, #{pfltId}, '0002',
+                #{inputUserId}, SYSDATE, #{remoteAddr})
+</update>
+
+
+<!-- ─────────────────────────────────────────────────────────────
+  5. 교양 MCQI_SECT_DSC 삭제 (SECT_CD + TYPE_CD 단위 - 저장 전 선행 삭제)
+   파라미터 : yy, orgid, pfltId, cqiSectCd, cqiTypeCd
+───────────────────────────────────────────────────────────────── -->
+<delete id="deleteLcqiSect">
+    /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.deleteLcqiSect */
+    DELETE FROM UNIV.MCQI_SECT_DSC
+     WHERE YY         = #{yy}
+       AND ORGID      = #{orgid}
+       AND PFLT_ID    = #{pfltId}
+       AND CQI_DIV_CD = '0002'
+       AND CQI_SECT_CD = #{cqiSectCd}
+       AND CQI_TYPE_CD = #{cqiTypeCd}
+</delete>
+
+
+<!-- ─────────────────────────────────────────────────────────────
+  6. 교양 MCQI_SECT_DSC 단건 insert
+   파라미터 : yy, orgid, pfltId, cqiSectCd, cqiTypeCd,
+              choiCd, ansTypeCd, cont, sortOrd,
+              inputUserId, remoteAddr
+───────────────────────────────────────────────────────────────── -->
+<insert id="insertLcqiSect">
+    /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.insertLcqiSect */
+    INSERT INTO UNIV.MCQI_SECT_DSC (
+        YY, ORGID, PFLT_ID, CQI_DIV_CD,
+        CQI_SECT_CD, CQI_TYPE_CD,
+        CHOI_CD, ANS_TYPE_CD, CONT, SORT_ORD,
+        INPUT_UID, INPUT_DM, INPUT_IP
+    ) VALUES (
+        #{yy}, #{orgid}, #{pfltId}, '0002',
+        #{cqiSectCd}, #{cqiTypeCd},
+        #{choiCd}, #{ansTypeCd}, #{cont}, #{sortOrd},
+        #{inputUserId}, SYSDATE, #{remoteAddr}
+    )
+</insert>

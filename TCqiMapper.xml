@@ -1,0 +1,1053 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.dku.univ.mcqi.tcqi.repository.TcqiMapper">
+    <select id="findOpCuriBas" resultType="kr.dku.univ.mcqi.tcqi.domain.OpCuriBas">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findOpCuriBas */
+        ,op_orgid /* 개설조직ID */
+              ,yy /* 년도 */
+              ,sem_cd /* 학기코드 */
+              ,dept_loct_cd /* 공통코드 */
+              ,mj_orgid /* 전공조직ID */
+              ,subj_id /* 교과목ID */
+              ,bss_tkcrs_schgr /* 기준수강학년 */
+              ,curi_cpar_cd /* 교육과정이수영역코드 */
+              ,expt_noper /* 예상인원 */
+              ,op_yn /* 개설여부 */
+              ,curi_yy /* 교육과정년도 */
+              ,curi_sem_cd /* 교육과정학기코드 */
+          FROM univ.lssn_op_curi_bas
+           AND op_orgid = #{opOrgid}
+        AND yy = #{yy}
+        AND sem_cd = #{semCd}
+        AND dept_loct_cd = #{deptLoctCd}
+        AND mj_orgid = #{mjOrgid}
+        AND subj_id = #{subjId}
+        AND bss_tkcrs_schgr = #{bssTkcrsSchgr}
+    </select>
+
+    <insert id="insertOpCuriBas">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.insertOpCuriBas */
+        INSERT INTO univ.lssn_op_curi_bas (
+                                          ,op_orgid /* 개설조직ID */
+                                          ,yy /* 년도 */
+                                          ,sem_cd /* 학기코드 */
+                                          ,dept_loct_cd /* 공통코드 */
+                                          ,mj_orgid /* 전공조직ID */
+                                          ,subj_id /* 교과목ID */
+                                          ,bss_tkcrs_schgr /* 기준수강학년 */
+                                          ,curi_cpar_cd /* 교육과정이수영역코드 */
+                                          ,expt_noper /* 예상인원 */
+                                          ,op_yn /* 개설여부 */
+                                          ,curi_yy /* 교육과정년도 */
+                                          ,curi_sem_cd /* 교육과정학기코드 */
+                                          ,input_uid /* 입력사용자ID */
+                                          ,input_dm /* 입력일시 */
+                                          ,input_ip /* 입력IP */)
+        VALUES (
+               ,#{opOrgid}
+               ,#{yy}
+               ,#{semCd}
+               ,#{deptLoctCd}
+               ,#{mjOrgid}
+               ,#{subjId}
+               ,#{bssTkcrsSchgr}
+               ,#{curiCparCd}
+               ,#{exptNoper}
+               ,#{opYn}
+               ,#{curiYy}
+               ,#{curiSemCd}
+               ,#{inputUserId}
+               ,SYSDATE
+               ,#{remoteAddr})
+    </insert>
+
+    <update id="updateOpCuriBas">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.updateOpCuriBas */
+        UPDATE univ.lssn_op_curi_bas
+        SET curi_cpar_cd = #{curiCparCd} /* 교육과정이수영역코드 */
+          ,expt_noper = #{exptNoper} /* 예상인원 */
+          ,op_yn = #{opYn} /* 개설여부 */
+          ,curi_yy = #{curiYy} /* 교육과정년도 */
+          ,curi_sem_cd = #{curiSemCd} /* 교육과정학기코드 */
+          ,ltst_upd_uid = #{latestUserId} /* 최근수정사용자ID */
+          ,ltst_upd_dm = SYSDATE /* 최근수정일시 */
+          ,ltst_upd_ip = #{remoteAddr} /* 최근수정IP */
+            AND op_orgid = #{opOrgid}
+            AND yy = #{yy}
+            AND sem_cd = #{semCd}
+            AND dept_loct_cd = #{deptLoctCd}
+            AND mj_orgid = #{mjOrgid}
+            AND subj_id = #{subjId}
+            AND bss_tkcrs_schgr = #{bssTkcrsSchgr}
+    </update>
+
+    <delete id="deleteOpCuriBas">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.deleteOpCuriBas */
+        DELETE
+        FROM univ.lssn_op_curi_bas
+            AND op_orgid = #{opOrgid}
+            AND yy = #{yy}
+            AND sem_cd = #{semCd}
+            AND dept_loct_cd = #{deptLoctCd}
+            AND mj_orgid = #{mjOrgid}
+            AND subj_id = #{subjId}
+            AND bss_tkcrs_schgr = #{bssTkcrsSchgr}
+    </delete>
+
+
+
+    <select id="saveCallCqiProc" statementType = "CALLABLE">
+        CALL UNIV.SP_LSSN_CQI_AGGR_PROC_PROC(
+
+            #{yy, jdbcType=VARCHAR, mode=IN}
+            ,#{inputUserId, jdbcType=VARCHAR, mode=IN}
+            ,#{remoteAddr, jdbcType=VARCHAR, mode=IN}
+            ,#{resultMessage, jdbcType=VARCHAR, mode=OUT}
+            ,#{resultCode, jdbcType=INTEGER, mode=OUT}
+            )
+
+
+    </select>
+
+
+    <select id="preCheck"   resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.preCheck */
+        SELECT ORGZ_NM
+             ,ORGZ_ANM
+             ,ORGZ_UNT_CD
+             ,DEPT_LOCT_CD
+        FROM UNIV.VW_LSSN_ORGZ_DET
+        WHERE ORGID = #{orgid}
+
+    </select>
+
+
+    <select id="findCqiOrzgDscList"   resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findCqiOrzgDscList */
+
+        SELECT DISTINCT EMO.MAPPED_ORGID AS ORGID
+                , COMM.FN_ORGNM(COMM.FN_ORG_LVL_ID(EMO.MAPPED_ORGID,'200')) AS UNI_NM
+                , COMM.FN_ORGNM(EMO.MAPPED_ORGID) AS ORGZ_NM
+                , CO.HR_INST_ID
+                , CO.USE_YN
+                , DECODE(CO.DEPT_LOCT_CD,'1','죽전','천안') AS DEPT_LOCT_NM
+                , CO.ORGZ_SORT_OER
+                , M.YY
+                , VLOD.COLL_CD
+                , VLOD.DPMT_CD
+                , VLOD.MJ_CD
+                , VLOD.DEPT_LOCT_CD
+                /*, M.RMK*/
+                , NVL(M.SUBMIT_YN,'0') AS SUBMIT_YN
+                , CASE WHEN NVL(M.SUBMIT_YN,'0')='0' THEN '' ELSE M.SUBMIT_UID END AS SUBMIT_UID
+                , CASE WHEN NVL(M.SUBMIT_YN,'0')='0' THEN '' ELSE E_SUB.EMPNM END AS SUBMIT_UNM
+                , E_SUB.MEM_PSTN_NM
+                , E_SUB.WKGR_NM
+                , CASE WHEN NVL(M.SUBMIT_YN,'0')='0' THEN '' ELSE TO_CHAR(M.SUBMIT_DM,'YYYY-MM-DD') END AS SUBMIT_DM
+                , NVL(M.CLOSE_YN,'0') AS CLOSE_YN
+                , CASE WHEN NVL(M.CLOSE_YN,'0')='0' THEN '' ELSE M.CLOSE_UID END AS CLOSE_UID
+                , CASE WHEN NVL(M.CLOSE_YN,'0')='0' THEN '' ELSE E_CLS.EMPNM END AS CLOSE_UNM
+                , CASE WHEN NVL(M.CLOSE_YN,'0')='0' THEN '' ELSE TO_CHAR(M.CLOSE_DM,'YYYY-MM-DD') END AS CLOSE_DM
+                , NVL(M.INPUT_UID,'') AS INPUT_UID
+                , E_INP.EMPNM AS INPUT_UNM
+                , TO_CHAR(M.INPUT_DM,'YYYY-MM-DD HH24:MI:SS') AS INPUT_DM
+                , NVL(M.LTST_UPD_UID,'') AS LTST_UPD_UID
+                , E_UPD.EMPNM AS LTST_UPD_UNM
+                , TO_CHAR(M.LTST_UPD_DM,'YYYY-MM-DD HH24:MI:SS') AS LTST_UPD_DM
+        FROM   UNIV.EFLN_MAPPED_ORGZ EMO
+        JOIN   UNIV.VW_LSSN_ORGZ_DET VLOD
+          ON   EMO.MAPPED_ORGID = VLOD.ORGID
+        JOIN   COMM.COMM_ORGZ CO
+          ON   EMO.MAPPED_ORGID = CO.ORGID
+        LEFT JOIN ( SELECT *
+                      FROM (  SELECT S1.*
+                                   , ROW_NUMBER() OVER ( PARTITION BY S1.YY, S1.ORGID, S1.CQI_DIV_CD ORDER BY NVL(S1.LTST_UPD_DM, S1.INPUT_DM) DESC, S1.INPUT_DM DESC) AS RN
+                                FROM UNIV.MCQI_MASTER S1
+                               WHERE S1.YY = #{yy}              /* :YY */
+                                 AND S1.CQI_DIV_CD = '0001'      /* 전공 */ )
+                      WHERE RN = 1
+                  ) M
+            ON EMO.MAPPED_ORGID = M.ORGID
+            LEFT JOIN ADMI.VW_EMP_BAS E_SUB
+            ON M.SUBMIT_UID = E_SUB.EMPID
+            LEFT JOIN ADMI.VW_EMP_BAS E_CLS
+            ON M.CLOSE_UID = E_CLS.EMPID
+            LEFT JOIN ADMI.VW_EMP_BAS E_INP
+            ON M.PFLT_ID = E_INP.EMPID
+            LEFT JOIN ADMI.VW_EMP_BAS E_UPD
+            ON M.LTST_UPD_UID = E_UPD.EMPID
+        WHERE  EMO.WOK_CD = 'MCQI'
+          AND  EMO.YY = #{yy}
+        <if test="collCd != null">
+            AND vlod.coll_cd = #{collCd}
+        </if>
+        <if test="dpmtCd != null">
+            AND vlod.dpmt_cd = #{dpmtCd}
+        </if>
+        <if test="mjCd != null">
+            AND vlod.mj_cd = #{mjCd}
+        </if>
+        <if test="deptLoctCd != null">
+            AND vlod.dept_loct_cd = #{deptLoctCd}
+        </if>
+        <if test="submitYn != null">
+            AND  nvl(cqi.submit_yn,0) =#{submitYn}
+        </if>
+        <if test="closeYn != null">
+            AND  nvl(cqi.close_yn,0) =#{closeYn}
+        </if>
+
+
+
+        order by co.orgz_sort_oer
+
+
+    </select>
+
+
+    <select id="findMcqiContDscList" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiContDscList
+        - 기준: MCQI_MASTER + MCQI_COMP_DSC
+        - 올해 값 없으면 전년도 D1~D10 이월 */
+        WITH CUR_COMP AS (
+        SELECT YY,
+        ORGID,
+        PFLT_ID,
+        CQI_COMP_CD,
+        CQI_COMP_YN
+        FROM UNIV.MCQI_COMP_DSC
+        WHERE YY         = #{yy}
+        <if test="pfltId != null">
+            AND PFLT_ID    = #{pfltId}
+        </if>
+        AND CQI_DIV_CD = '0001'
+        ),
+        PREV_COMP AS (
+        SELECT YY,
+        ORGID,
+        PFLT_ID,
+        CQI_COMP_CD,
+        CQI_COMP_YN
+        FROM UNIV.MCQI_COMP_DSC
+        WHERE YY         = TO_CHAR(TO_NUMBER(#{yy}) - 1)
+        <if test="pfltId != null">
+            AND PFLT_ID    = #{pfltId}
+        </if>
+        AND CQI_DIV_CD = '0001'
+        ),
+        CUR_AGG AS (
+        SELECT ORGID,
+        MAX(CASE WHEN CQI_COMP_CD = 'D1'  THEN CQI_COMP_YN END) AS D1_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D2'  THEN CQI_COMP_YN END) AS D2_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D3'  THEN CQI_COMP_YN END) AS D3_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D4'  THEN CQI_COMP_YN END) AS D4_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D5'  THEN CQI_COMP_YN END) AS D5_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D6'  THEN CQI_COMP_YN END) AS D6_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D7'  THEN CQI_COMP_YN END) AS D7_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D8'  THEN CQI_COMP_YN END) AS D8_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D9'  THEN CQI_COMP_YN END) AS D9_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D10' THEN CQI_COMP_YN END) AS D10_YN,
+        -- 올해 하나라도 값이 있는지 여부
+        SUM(CASE WHEN CQI_COMP_YN IS NOT NULL THEN 1 ELSE 0 END) AS CUR_CNT
+        FROM CUR_COMP
+        GROUP BY ORGID
+        ),
+        PREV_AGG AS (
+        SELECT ORGID,
+        MAX(CASE WHEN CQI_COMP_CD = 'D1'  THEN CQI_COMP_YN END) AS D1_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D2'  THEN CQI_COMP_YN END) AS D2_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D3'  THEN CQI_COMP_YN END) AS D3_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D4'  THEN CQI_COMP_YN END) AS D4_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D5'  THEN CQI_COMP_YN END) AS D5_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D6'  THEN CQI_COMP_YN END) AS D6_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D7'  THEN CQI_COMP_YN END) AS D7_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D8'  THEN CQI_COMP_YN END) AS D8_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D9'  THEN CQI_COMP_YN END) AS D9_YN,
+        MAX(CASE WHEN CQI_COMP_CD = 'D10' THEN CQI_COMP_YN END) AS D10_YN
+        FROM PREV_COMP
+        GROUP BY ORGID
+        )
+        SELECT
+        #{yy}                                              AS YY
+        , CO.DEPT_LOCT_CD
+        , COMM.FN_CMN_CD('DEPT_LOCT_CD', CO.DEPT_LOCT_CD)   AS DEPT_LOCT_NM
+        , CBO.DPMT_CD
+        , CBO.DPMT_NM
+        , CO.ORGID
+        , CO.ORGZ_NM
+        -- 올해 값이 하나도 없으면(CUR_CNT=0) 전년도 값 사용, 있으면 올해 값 사용
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D1_YN  ELSE CA.D1_YN  END AS D1_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D2_YN  ELSE CA.D2_YN  END AS D2_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D3_YN  ELSE CA.D3_YN  END AS D3_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D4_YN  ELSE CA.D4_YN  END AS D4_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D5_YN  ELSE CA.D5_YN  END AS D5_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D6_YN  ELSE CA.D6_YN  END AS D6_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D7_YN  ELSE CA.D7_YN  END AS D7_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D8_YN  ELSE CA.D8_YN  END AS D8_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D9_YN  ELSE CA.D9_YN  END AS D9_YN
+        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D10_YN ELSE CA.D10_YN END AS D10_YN
+        -- Master 제출/마감 상태
+        , NVL(MM.SUBMIT_YN, 'N')                             AS SUBMIT_YN
+        , MM.SUBMIT_UID
+        , MM.SUBMIT_DM
+        , NVL(MM.CLOSE_YN, 'N')                              AS CLOSE_YN
+        , MM.CLOSE_UID
+        , MM.CLOSE_DM
+        FROM   COMM.COMM_ORGZ      CO
+        JOIN   COMM.COMM_BACH_ORGZ CBO
+        ON CO.ORGID = CBO.ORGID
+        JOIN   (SELECT ORGID
+        FROM TABLE(COMM.FN_ORGZ_AUTH(#{loginUserIntgUid},
+        #{relatWokCd},
+        #{loginUserOrgid},
+        '',
+        #{acsAlRngCd}))
+        ) FOA
+        ON CO.ORGID = FOA.ORGID
+        LEFT JOIN CUR_AGG  CA ON CA.ORGID = CO.ORGID
+        LEFT JOIN PREV_AGG PA ON PA.ORGID = CO.ORGID
+        LEFT JOIN UNIV.MCQI_MASTER MM
+        ON MM.YY         = #{yy}
+        AND MM.ORGID      = CO.ORGID
+        <if test="pfltId != null">
+            AND MM.PFLT_ID    = #{pfltId}
+        </if>
+        AND MM.CQI_DIV_CD = '0001'
+        WHERE  CBO.COLL_CD      = #{collCd}
+        AND  CBO.DPMT_CD      = #{dpmtCd}
+        AND  CO.ORGID         = #{mjCd}
+        AND  CO.DEPT_LOCT_CD  = #{deptLoctCd}
+    </select>
+
+    <update id="mergeMcqiContDsc">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.mergeMcqiContDscList */
+        MERGE INTO UNIV.MCQI_CONT_DSC
+            USING DUAL ON (YY = #{yy}
+                AND ORGID = #{orgid})
+            WHEN MATCHED THEN
+                UPDATE
+                    SET D1_YN = #{d1Yn}
+                        ,D2_YN = #{d2Yn}
+                        ,D3_YN = #{d3Yn}
+                        ,D4_YN = #{d4Yn}
+                        ,D5_YN = #{d5Yn}
+                        ,D6_YN = #{d6Yn}
+                        ,D7_YN = #{d7Yn}
+                        ,D8_YN = #{d8Yn}
+                        ,D9_YN = #{d9Yn}
+                        ,D10_YN = #{d10Yn}
+                        ,CONT1 = #{cont1}
+                        ,CONT2 = #{cont2}
+                        ,CONT3 = #{cont3}
+                        ,CONT4 = #{cont4}
+                        ,CONT5 = #{cont5}
+                        ,CONT6 = #{cont6}
+                        ,CONT7 = #{cont7}
+                        ,CONT8 = #{cont8}
+                        ,RMK = #{rmk}
+                        ,LTST_UPD_UID = #{latestUserId}
+                        ,LTST_UPD_DM = SYSDATE
+                        ,LTST_UPD_IP = #{remoteAddr}
+            WHEN NOT MATCHED THEN
+                INSERT (
+                        YY
+                    ,ORGID
+                    ,D1_YN
+                    ,D2_YN
+                    ,D3_YN
+                    ,D4_YN
+                    ,D5_YN
+                    ,D6_YN
+                    ,D7_YN
+                    ,D8_YN
+                    ,D9_YN
+                    ,D10_YN
+                    ,CONT1
+                    ,CONT2
+                    ,CONT3
+                    ,CONT4
+                    ,CONT5
+                    ,CONT6
+                    ,CONT7
+                    ,CONT8
+                    ,CONT9
+                    ,CONT10
+                    ,CONT11
+                    ,RMK
+                    ,INPUT_UID
+                    ,INPUT_DM
+                    ,INPUT_IP
+                    ) VALUES (
+                               #{yy}
+                             ,#{orgid}
+                             ,#{d1Yn}
+                             ,#{d2Yn}
+                             ,#{d3Yn}
+                             ,#{d4Yn}
+                             ,#{d5Yn}
+                             ,#{d6Yn}
+                             ,#{d7Yn}
+                             ,#{d8Yn}
+                             ,#{d9Yn}
+                             ,#{d10Yn}
+                             ,#{cont1}
+                             ,#{cont2}
+                             ,#{cont3}
+                             ,#{cont4}
+                             ,#{cont5}
+                             ,#{cont6}
+                             ,#{cont7}
+                             ,#{cont8}
+                             ,#{cont9}
+                             ,#{cont10}
+                             ,#{cont11}
+                             ,#{rmk}
+                             ,#{inputUserId}
+                             ,SYSDATE
+                             ,#{remoteAddr})
+    </update>
+
+    <update id="updateMcqiContSubmit">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.updateMcqiContSubmit */
+        UPDATE UNIV.MCQI_CONT_DSC
+        SET SUBMIT_YN = '1'
+          ,SUBMIT_UID = #{latestUserId}
+          ,SUBMIT_DM = SYSDATE
+          ,LTST_UPD_UID = #{latestUserId}
+          ,LTST_UPD_DM = SYSDATE
+          ,LTST_UPD_IP = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+    </update>
+
+    <update id="updateMcqiContSubmitCnl">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.updateMcqiContSubmitCnl */
+        UPDATE UNIV.MCQI_CONT_DSC
+        SET SUBMIT_YN = NULL
+          ,SUBMIT_UID = NULL
+          ,SUBMIT_DM = NULL
+          ,LTST_UPD_UID = #{latestUserId}
+          ,LTST_UPD_DM = SYSDATE
+          ,LTST_UPD_IP = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+    </update>
+
+    <select id="findMcqiContInpCnt" resultType="int">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiContInpCnt */
+        SELECT COUNT(1)
+        FROM UNIV.MCQI_CONT_DSC
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND (CONT1 IS NULL
+            OR CONT2 IS NULL
+            OR CONT3 IS NULL
+            OR CONT4 IS NULL
+            OR CONT5 IS NULL
+            OR CONT6 IS NULL
+            OR CONT7 IS NULL
+            OR CONT8 IS NULL)
+    </select>
+
+    <update id="updateTcqiOrgzDsc">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.updateTcqiOrgzDsc */
+        UPDATE univ.MCQI_CONT_DSC
+        SET  close_yn = #{closeYn}
+          ,close_uid = #{latestUserId}
+          ,close_dm = SYSDATE
+          ,ltst_upd_uid = #{latestUserId}    /* 최근수정사용자ID */
+          ,ltst_upd_dm = SYSDATE           /* 최근수정일시 */
+          ,ltst_upd_ip = #{remoteAddr}     /* 최근수정IP */
+        WHERE yy = #{yy}
+          AND orgid = #{orgid}
+    </update>
+
+
+
+    <select id="findMcqiPfltAscDsc" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiPfltAscDsc */
+        SELECT YY
+        ,SEM_CD
+        ,CQI_DIV_CD
+        ,COMM.FN_CMN_CD('CQI_DIV_CD', CQI_DIV_CD)  AS CQI_DIV_NM
+        ,DET_MNGT_DSC_CD
+        ,COMM.FN_CMN_CD('DET_MNGT_DSC_CD', DET_MNGT_DSC_CD) AS DET_MNGT_DSC_NM
+        ,PFLT_ID
+        ,PFLT_ID AS before_Pflt_Id
+        ,VEI.MEM_PSTN_NM as orgz_Nm
+        ,VEI.WKGR_NM
+        ,VEI.WKPS_NM
+        ,COMM.FN_USER_NM(PFLT_ID) PFLT_NM
+        ,MCQI.INPUT_UID
+        ,MCQI.INPUT_DM
+        ,MCQI.INPUT_IP
+        ,MCQI.LTST_UPD_UID
+        ,MCQI.LTST_UPD_DM
+        ,MCQI.LTST_UPD_IP
+        FROM UNIV.MCQI_PFLT_ASC_DSC MCQI
+        , ADMI.VW_EMP_INFO VEI
+        WHERE 1=1
+        AND MCQI.PFLT_ID = VEI.EMPID
+        and YY = #{yy}
+        <if test="cqiDivCd != null">
+            and CQI_DIV_CD = #{cqiDivCd}
+        </if>
+        <if test="detMngtDscCd != null">
+            and DET_MNGT_DSC_CD = #{detMngtDscCd}
+        </if>
+        <if test="pfltId != null">
+            and MCQI.PFLT_ID = #{pfltId}
+        </if>
+        order by  YY
+        , CQI_DIV_CD
+        , DET_MNGT_DSC_CD
+    </select>
+
+    <insert id="insertMcqiPfltAscDsc">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.insertMcqiPfltAscDsc */
+        INSERT INTO univ.mcqi_pflt_asc_dsc (
+                                             yy /* 년도 */
+                                           ,sem_cd /* 학기코드 */
+                                           ,CQI_DIV_CD /* CQI구분 */
+                                           ,DET_MNGT_DSC_CD /* 관리항목관리 */
+                                           ,PFLT_ID /* 교강사ID */
+                                           ,input_uid /* 입력사용자ID */
+                                           ,input_dm /* 입력일시 */
+                                           ,input_ip /* 입력IP */)
+        VALUES (
+                 #{yy}
+               ,#{semCd}
+               ,#{cqiDivCd}
+               ,#{detMngtDscCd}
+               ,#{pfltId}
+               ,#{inputUserId}
+               ,SYSDATE
+               ,#{remoteAddr})
+    </insert>
+
+
+    <update id="updateMcqiPfltAscDsc">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.updateMcqiPfltAscDsc */
+        UPDATE univ.mcqi_pflt_asc_dsc
+        SET DET_MNGT_DSC_CD = #{detMngtDscCd}
+          ,PFLT_ID = #{pfltId}
+          ,ltst_upd_uid = #{latestUserId}    /* 최근수정사용자ID */
+          ,ltst_upd_dm = SYSDATE           /* 최근수정일시 */
+          ,ltst_upd_ip = #{remoteAddr}     /* 최근수정IP */
+        WHERE yy = #{yy}
+          AND SEM_CD = '1'
+          AND DET_MNGT_DSC_CD = #{detMngtDscCd}
+          AND PFLT_ID = #{beforePfltId}
+
+    </update>
+
+
+
+    <delete id="deleteMcqiPfltAscDsc">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.deleteMcqiPfltAscDsc */
+        DELETE
+        FROM univ.mcqi_pflt_asc_dsc
+        WHERE 1=1
+          AND yy = #{yy}
+          AND SEM_CD = '1'
+          AND CQI_DIV_CD = #{cqiDivCd}
+          AND DET_MNGT_DSC_CD = #{detMngtDscCd}
+          AND PFLT_ID = #{pfltId}
+    </delete>
+
+    <!-- ===================================================== -->
+    <!--  MCQI_MASTER -->
+    <!-- ===================================================== -->
+
+    <select id="findMcqiMaster"
+            parameterType="kr.dku.univ.mcqi.tcqi.domain.McqiMaster"
+            resultType="kr.dku.univ.mcqi.tcqi.domain.McqiMaster">
+        SELECT *
+        FROM UNIV.MCQI_MASTER
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </select>
+
+    <insert id="insertMcqiMaster">
+        INSERT INTO UNIV.MCQI_MASTER (
+            YY, ORGID, PFLT_ID, CQI_DIV_CD,
+            RMK,
+            INPUT_UID, INPUT_DM, INPUT_IP
+        ) VALUES (
+                     #{yy}, #{orgid}, #{pfltId}, #{cqiDivCd},
+                     #{rmk},
+                     #{inputUserId}, SYSDATE, #{remoteAddr}
+                 )
+    </insert>
+
+    <update id="updateMcqiMaster">
+        UPDATE UNIV.MCQI_MASTER
+        SET RMK = #{rmk},
+            LTST_UPD_UID = #{latestUserId},
+            LTST_UPD_DM  = SYSDATE,
+            LTST_UPD_IP  = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </update>
+
+    <delete id="deleteMcqiMaster">
+        DELETE FROM UNIV.MCQI_MASTER
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </delete>
+
+
+    <!-- ===================================================== -->
+    <!--  MCQI_COMP_DSC -->
+    <!-- ===================================================== -->
+
+    <select id="findMcqiCompList"
+            resultType="kr.dku.univ.mcqi.tcqi.domain.McqiCompDsc">
+        SELECT *
+        FROM UNIV.MCQI_COMP_DSC
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </select>
+
+    <delete id="deleteMcqiComp">
+        DELETE FROM UNIV.MCQI_COMP_DSC
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </delete>
+
+    <insert id="insertMcqiComp">
+        INSERT INTO UNIV.MCQI_COMP_DSC (
+            YY, ORGID, PFLT_ID, CQI_DIV_CD,
+            CQI_COMP_CD, CQI_COMP_YN,
+            INPUT_UID, INPUT_DM, INPUT_IP
+        ) VALUES (
+                     #{yy}, #{orgid}, #{pfltId}, #{cqiDivCd},
+                     #{cqiCompCd}, #{cqiCompYn},
+                     #{inputUserId}, SYSDATE, #{remoteAddr}
+                 )
+    </insert>
+
+
+    <!-- ===================================================== -->
+    <!--  MCQI_SECT_DSC -->
+    <!-- ===================================================== -->
+
+    <select id="findMcqiSectList"
+            resultType="kr.dku.univ.mcqi.tcqi.domain.McqiSectDsc">
+        SELECT *
+        FROM UNIV.MCQI_SECT_DSC
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+          AND CQI_SECT_CD = #{cqiSectCd}
+          AND CQI_TYPE_CD = #{cqiTypeCd}
+    </select>
+
+    <delete id="deleteMcqiSect">
+        DELETE FROM UNIV.MCQI_SECT_DSC
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+          AND CQI_SECT_CD = #{cqiSectCd}
+          AND CQI_TYPE_CD = #{cqiTypeCd}
+    </delete>
+
+    <insert id="insertMcqiSect">
+        INSERT INTO UNIV.MCQI_SECT_DSC (
+            YY, ORGID, PFLT_ID, CQI_DIV_CD,
+            CQI_SECT_CD, CQI_TYPE_CD,
+            CHOI_CD, ANS_TYPE_CD, CONT, SORT_ORD,
+            INPUT_UID, INPUT_DM, INPUT_IP
+        ) VALUES (
+                     #{yy}, #{orgid}, #{pfltId}, #{cqiDivCd},
+                     #{cqiSectCd}, #{cqiTypeCd},
+                     #{choiCd}, #{ansTypeCd}, #{cont}, #{sortOrd},
+                     #{inputUserId}, SYSDATE, #{remoteAddr}
+                 )
+    </insert>
+
+
+    <!-- ===================================================== -->
+    <!--  관리자 Pivot 집계 조회 -->
+    <!-- ===================================================== -->
+
+    <select id="findMcqiSectPivot" resultType="CamelCaseMap">
+        SELECT
+            M.ORGID,
+            M.PFLT_ID,
+            S.CQI_SECT_CD,
+            S.CQI_TYPE_CD,
+            S.CHOI_CD,
+            COUNT(*) CNT
+        FROM UNIV.MCQI_MASTER M
+                 JOIN UNIV.MCQI_SECT_DSC S
+                      ON M.YY = S.YY
+                          AND M.ORGID = S.ORGID
+                          AND M.PFLT_ID = S.PFLT_ID
+                          AND M.CQI_DIV_CD = S.CQI_DIV_CD
+        WHERE M.YY = #{yy}
+          AND S.ANS_TYPE_CD = 'OBJ'
+        GROUP BY
+            M.ORGID,
+            M.PFLT_ID,
+            S.CQI_SECT_CD,
+            S.CQI_TYPE_CD,
+            S.CHOI_CD
+        ORDER BY
+            M.ORGID,
+            M.PFLT_ID,
+            S.CQI_SECT_CD,
+            S.CQI_TYPE_CD
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- MCQI_MASTER 상태 변경 -->
+    <!-- ===================================================== -->
+
+    <update id="updateMcqiMasterSubmit">
+        UPDATE UNIV.MCQI_MASTER
+        SET SUBMIT_YN  = 'Y',
+            SUBMIT_UID = #{latestUserId},
+            SUBMIT_DM  = SYSDATE,
+            LTST_UPD_UID = #{latestUserId},
+            LTST_UPD_DM  = SYSDATE,
+            LTST_UPD_IP  = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </update>
+
+    <update id="updateMcqiMasterSubmitCnl">
+        UPDATE UNIV.MCQI_MASTER
+        SET SUBMIT_YN  = NULL,
+            SUBMIT_UID = NULL,
+            SUBMIT_DM  = NULL,
+            LTST_UPD_UID = #{latestUserId},
+            LTST_UPD_DM  = SYSDATE,
+            LTST_UPD_IP  = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </update>
+
+    <update id="updateMcqiMasterClose">
+        UPDATE UNIV.MCQI_MASTER
+        SET CLOSE_YN = 'Y',
+            CLOSE_UID = #{latestUserId},
+            CLOSE_DM = SYSDATE,
+            LTST_UPD_UID = #{latestUserId},
+            LTST_UPD_DM = SYSDATE,
+            LTST_UPD_IP = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+    </update>
+    <update id="updateMcqiComp">
+        UPDATE UNIV.MCQI_COMP_DSC
+        SET CQI_COMP_YN = #{cqiCompYn},
+            LTST_UPD_UID = #{latestUserId},
+            LTST_UPD_DM  = SYSDATE,
+            LTST_UPD_IP  = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+          AND CQI_COMP_CD = #{cqiCompCd}
+    </update>
+    <update id="updateMcqiSect">
+        UPDATE UNIV.MCQI_SECT_DSC
+        SET CONT = #{cont},
+            SORT_ORD = #{sortOrd},
+            LTST_UPD_UID = #{latestUserId},
+            LTST_UPD_DM  = SYSDATE,
+            LTST_UPD_IP  = #{remoteAddr}
+        WHERE YY = #{yy}
+          AND ORGID = #{orgid}
+          AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = #{cqiDivCd}
+          AND CQI_SECT_CD = #{cqiSectCd}
+          AND CQI_TYPE_CD = #{cqiTypeCd}
+          AND CHOI_CD = #{choiCd}
+    </update>
+
+    <!-- ================================================================
+  교양 Macro-CQI 추가 쿼리
+  TcqiMapper.xml 의 </mapper> 태그 바로 위에 삽입하세요.
+
+  [쿼리 목록]
+  1. findLcqiMaster         - 교양 MCQI_MASTER 상태 조회
+  2. findLcqiSectList       - 교양 MCQI_SECT_DSC 현재연도 조회
+  3. findLcqiPrevSectList   - 전년도 TYPE='03'(이번년도개선계획) 이월용 조회
+  4. mergeLcqiMaster        - 교양 MCQI_MASTER upsert (저장 시 자동 생성)
+  5. deleteLcqiSect         - 교양 SECT_DSC 삭제 (SECT+TYPE 단위)
+  6. insertLcqiSect         - 교양 SECT_DSC 단건 insert
+
+  [설계 메모]
+  - CQI_DIV_CD = '0002' 고정 (교양)
+  - PFLT_ID     = detMngtDscCd (SELF/COMM/PROB/MAJOR/GLOBAL/SWAI/HUM/SCI/ART)
+  - ORGID       = 교양처 조직ID (tcqiSearch.collCd)
+  - 전년도 이월  : TYPE='01' 행은 ServiceImpl에서 전년도 TYPE='03' 결과로 채움
+================================================================ -->
+
+    <!-- ─────────────────────────────────────────────────────────────
+      1. 교양 MCQI_MASTER 상태 조회
+       파라미터 : yy, orgid(=collCd), pfltId(=detMngtDscCd)
+       반환     : CamelCaseMap (submitYn, closeYn, submitDm, submitUid, closeDm, ...)
+    ───────────────────────────────────────────────────────────────── -->
+    <select id="findLcqiMaster" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findLcqiMaster */
+        SELECT YY
+             ,ORGID
+             ,PFLT_ID
+             ,CQI_DIV_CD
+             ,NVL(SUBMIT_YN, 'N')  AS SUBMIT_YN
+             ,SUBMIT_UID
+             ,TO_CHAR(SUBMIT_DM, 'YYYY.MM.DD HH24:MI') AS SUBMIT_DM
+             ,NVL(CLOSE_YN,  'N')  AS CLOSE_YN
+             ,CLOSE_UID
+             ,TO_CHAR(CLOSE_DM,  'YYYY.MM.DD HH24:MI') AS CLOSE_DM
+             ,INPUT_UID
+             ,TO_CHAR(INPUT_DM, 'YYYY.MM.DD HH24:MI')  AS INPUT_DM
+             ,LTST_UPD_UID
+             ,TO_CHAR(LTST_UPD_DM, 'YYYY.MM.DD HH24:MI') AS LTST_UPD_DM
+        FROM UNIV.MCQI_MASTER
+        WHERE YY         = #{yy}
+          AND ORGID      = #{orgid}
+          AND PFLT_ID    = #{pfltId}
+          AND CQI_DIV_CD = '0002'
+    </select>
+
+
+    <!-- ─────────────────────────────────────────────────────────────
+      2. 교양 MCQI_SECT_DSC 현재연도 전체 조회
+       파라미터 : yy, orgid, pfltId
+       반환     : List<CamelCaseMap>
+                 (cqiSectCd, cqiTypeCd, choiCd, ansTypeCd, cont, sortOrd)
+    ───────────────────────────────────────────────────────────────── -->
+    <select id="findLcqiSectList" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findLcqiSectList */
+        SELECT CQI_SECT_CD
+             ,CQI_TYPE_CD
+             ,CHOI_CD
+             ,ANS_TYPE_CD
+             ,CONT
+             ,SORT_ORD
+        FROM UNIV.MCQI_SECT_DSC
+        WHERE YY         = #{yy}
+          AND ORGID      = #{orgid}
+          AND PFLT_ID    = #{pfltId}
+          AND CQI_DIV_CD = '0002'
+        ORDER BY CQI_SECT_CD, CQI_TYPE_CD, SORT_ORD, CHOI_CD
+    </select>
+
+
+    <!-- ─────────────────────────────────────────────────────────────
+      3. 전년도 교양 SECT_DSC 조회 (이번년도개선계획 TYPE='03' → 이월용)
+       파라미터 : yy (현재연도 → 쿼리 내부에서 -1 처리), orgid, pfltId
+       반환     : List<CamelCaseMap>
+       사용     : ServiceImpl에서 TYPE='01'(전년도개선계획) 항목 세팅에 활용
+    ───────────────────────────────────────────────────────────────── -->
+    <select id="findLcqiPrevSectList" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findLcqiPrevSectList */
+        SELECT CQI_SECT_CD
+             ,CQI_TYPE_CD
+             ,CHOI_CD
+             ,ANS_TYPE_CD
+             ,CONT
+             ,SORT_ORD
+        FROM UNIV.MCQI_SECT_DSC
+        WHERE YY         = TO_CHAR(TO_NUMBER(#{yy}) - 1)
+          AND ORGID      = #{orgid}
+          AND PFLT_ID    = #{pfltId}
+          AND CQI_DIV_CD = '0002'
+          AND CQI_TYPE_CD = '03'   /* 이번년도개선계획 → 다음연도 전년도개선계획으로 이월 */
+        ORDER BY CQI_SECT_CD, SORT_ORD, CHOI_CD
+    </select>
+
+
+    <!-- ─────────────────────────────────────────────────────────────
+      4. 교양 MCQI_MASTER upsert
+       파라미터 : yy, orgid, pfltId, inputUserId, remoteAddr, latestUserId
+       용도     : saveLcqiSectList 호출 시 MASTER 레코드 자동 생성
+    ───────────────────────────────────────────────────────────────── -->
+    <update id="mergeLcqiMaster">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.mergeLcqiMaster */
+        MERGE INTO UNIV.MCQI_MASTER TGT
+            USING DUAL
+            ON (    TGT.YY         = #{yy}
+                AND TGT.ORGID      = #{orgid}
+                AND TGT.PFLT_ID    = #{pfltId}
+                AND TGT.CQI_DIV_CD = '0002')
+            WHEN MATCHED THEN
+                UPDATE SET LTST_UPD_UID = #{latestUserId}
+                    ,LTST_UPD_DM  = SYSDATE
+                    ,LTST_UPD_IP  = #{remoteAddr}
+            WHEN NOT MATCHED THEN
+                INSERT (YY, ORGID, PFLT_ID, CQI_DIV_CD,
+                        INPUT_UID, INPUT_DM, INPUT_IP)
+                    VALUES (#{yy}, #{orgid}, #{pfltId}, '0002',
+                            #{inputUserId}, SYSDATE, #{remoteAddr})
+    </update>
+
+
+    <!-- ─────────────────────────────────────────────────────────────
+      5. 교양 MCQI_SECT_DSC 삭제 (SECT_CD + TYPE_CD 단위 - 저장 전 선행 삭제)
+       파라미터 : yy, orgid, pfltId, cqiSectCd, cqiTypeCd
+    ───────────────────────────────────────────────────────────────── -->
+    <delete id="deleteLcqiSect">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.deleteLcqiSect */
+        DELETE FROM UNIV.MCQI_SECT_DSC
+        WHERE YY         = #{yy}
+          AND ORGID      = #{orgid}
+          AND PFLT_ID    = #{pfltId}
+          AND CQI_DIV_CD = '0002'
+          AND CQI_SECT_CD = #{cqiSectCd}
+          AND CQI_TYPE_CD = #{cqiTypeCd}
+    </delete>
+
+
+    <!-- ─────────────────────────────────────────────────────────────
+      6. 교양 MCQI_SECT_DSC 단건 insert
+       파라미터 : yy, orgid, pfltId, cqiSectCd, cqiTypeCd,
+                  choiCd, ansTypeCd, cont, sortOrd,
+                  inputUserId, remoteAddr
+    ───────────────────────────────────────────────────────────────── -->
+    <insert id="insertLcqiSect">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.insertLcqiSect */
+        INSERT INTO UNIV.MCQI_SECT_DSC (
+            YY, ORGID, PFLT_ID, CQI_DIV_CD,
+            CQI_SECT_CD, CQI_TYPE_CD,
+            CHOI_CD, ANS_TYPE_CD, CONT, SORT_ORD,
+            INPUT_UID, INPUT_DM, INPUT_IP
+        ) VALUES (
+                     #{yy}, #{orgid}, #{pfltId}, '0002',
+                     #{cqiSectCd}, #{cqiTypeCd},
+                     #{choiCd}, #{ansTypeCd}, #{cont}, #{sortOrd},
+                     #{inputUserId}, SYSDATE, #{remoteAddr}
+                 )
+    </insert>
+
+
+    <!-- ================================================================
+      TcqiMapper.java 인터페이스 메서드와 매핑되는 추가 쿼리
+      ─ TcqiServiceImpl.findMcqiSectPrevPlanList() 에서 호출
+      ─ TcqiServiceImpl.saveLcqiSectList()         에서 호출
+    ================================================================ -->
+
+    <!-- ─────────────────────────────────────────────────────────────
+      findMcqiSectPrevPlan
+      ▸ 전년도(yy) TYPE='03'(이번년도개선계획) 행을 조회
+      ▸ TcqiServiceImpl.findMcqiSectPrevPlanList(key) 에서 호출
+        → key.yy = 현재연도 - 1 로 넘어옴
+      ▸ JSP(lcqiContDscForm.jsp) 에서 이 결과를 TYPE='01'(전년도개선계획)로
+        취급하여 disabled 렌더링
+      파라미터 : yy(전년도), orgid, pfltId, cqiDivCd
+      반환     : List<McqiSectDsc>
+    ───────────────────────────────────────────────────────────────── -->
+    <select id="findMcqiSectPrevPlan"
+            parameterType="kr.dku.univ.mcqi.tcqi.domain.McqiSectDsc"
+            resultType="kr.dku.univ.mcqi.tcqi.domain.McqiSectDsc">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiSectPrevPlan */
+        /* 전년도 TYPE='03'(이번년도개선계획) 조회 → 현재연도 TYPE='01'(전년도개선계획) 이월 */
+        SELECT CQI_SECT_CD
+             , CQI_TYPE_CD     /* 서비스·JSP에서 TYPE='01' 로 취급 */
+             , CHOI_CD
+             , ANS_TYPE_CD
+             , CONT
+             , SORT_ORD
+        FROM UNIV.MCQI_SECT_DSC
+        WHERE YY          = #{yy}        /* 전년도(현재연도 - 1) 로 호출 */
+          AND ORGID        = #{orgid}
+          AND PFLT_ID      = #{pfltId}
+          AND CQI_DIV_CD   = #{cqiDivCd}
+          AND CQI_TYPE_CD  = '03'        /* 이번년도개선계획만 이월 소스로 사용 */
+        ORDER BY CQI_SECT_CD, ANS_TYPE_CD DESC, SORT_ORD, CHOI_CD
+    </select>
+
+
+    <!-- ─────────────────────────────────────────────────────────────
+      deleteMcqiLcqiSect
+      ▸ 교양 CQI 영역답변 삭제 – (SECT_CD + TYPE_CD) 단위, 저장 전 선행 삭제
+      ▸ TcqiServiceImpl.saveLcqiSectList() 에서 호출
+      ▸ ★ 핵심: AND CQI_TYPE_CD != '01' 조건으로
+                 전년도 개선계획(TYPE='01') 을 DB 레벨에서 삭제 방지
+                 (서비스 필터링에 이은 3중 방어 최종 단계)
+      파라미터 : yy, orgid, pfltId, cqiDivCd, cqiSectCd, cqiTypeCd
+      ※ 호출 시 cqiTypeCd 에는 '02' 또는 '03' 만 전달됨
+    ───────────────────────────────────────────────────────────────── -->
+    <delete id="deleteMcqiLcqiSect"
+            parameterType="kr.dku.univ.mcqi.tcqi.domain.McqiSectDsc">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.deleteMcqiLcqiSect */
+        /* 교양 CQI 전용 삭제 – TYPE='01'(전년도개선계획) 삭제 방지 조건 포함 ★ */
+        DELETE FROM UNIV.MCQI_SECT_DSC
+        WHERE YY           = #{yy}
+          AND ORGID         = #{orgid}
+          AND PFLT_ID       = #{pfltId}
+          AND CQI_DIV_CD    = #{cqiDivCd}
+          AND CQI_SECT_CD   = #{cqiSectCd}
+          AND CQI_TYPE_CD   = #{cqiTypeCd}
+          AND CQI_TYPE_CD  != '01'       /* ★ DB 레벨 최종 방어: 전년도 개선계획은 절대 삭제 불가 */
+    </delete>
+
+    <!-- ========== 전공 Macro-CQI (CQI_DIV_CD='0001') - lcqi와 동일 로직 ========== -->
+    <select id="findMcqiMasterMap" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiMasterMap */
+        SELECT YY, ORGID, PFLT_ID, CQI_DIV_CD
+             , NVL(SUBMIT_YN, 'N') AS SUBMIT_YN
+             , SUBMIT_UID, TO_CHAR(SUBMIT_DM, 'YYYY.MM.DD HH24:MI') AS SUBMIT_DM
+             , NVL(CLOSE_YN, 'N') AS CLOSE_YN
+             , CLOSE_UID, TO_CHAR(CLOSE_DM, 'YYYY.MM.DD HH24:MI') AS CLOSE_DM
+             , INPUT_UID, TO_CHAR(INPUT_DM, 'YYYY.MM.DD HH24:MI') AS INPUT_DM
+             , LTST_UPD_UID, TO_CHAR(LTST_UPD_DM, 'YYYY.MM.DD HH24:MI') AS LTST_UPD_DM
+        FROM UNIV.MCQI_MASTER
+        WHERE YY = #{yy} AND ORGID = #{orgid} AND PFLT_ID = #{pfltId} AND CQI_DIV_CD = '0001'
+    </select>
+    <select id="findMcqiSectListAll" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiSectListAll */
+        SELECT CQI_SECT_CD, CQI_TYPE_CD, CHOI_CD, ANS_TYPE_CD, CONT, SORT_ORD
+        FROM UNIV.MCQI_SECT_DSC
+        WHERE YY = #{yy} AND ORGID = #{orgid} AND PFLT_ID = #{pfltId} AND CQI_DIV_CD = '0001'
+        ORDER BY CQI_SECT_CD, CQI_TYPE_CD, SORT_ORD, CHOI_CD
+    </select>
+    <select id="findMcqiPrevSectList" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiPrevSectList */
+        SELECT CQI_SECT_CD, CQI_TYPE_CD, CHOI_CD, ANS_TYPE_CD, CONT, SORT_ORD
+        FROM UNIV.MCQI_SECT_DSC
+        WHERE YY = TO_CHAR(TO_NUMBER(#{yy}) - 1) AND ORGID = #{orgid} AND PFLT_ID = #{pfltId}
+          AND CQI_DIV_CD = '0001' AND CQI_TYPE_CD = '0003'
+        ORDER BY CQI_SECT_CD, SORT_ORD, CHOI_CD
+    </select>
+    <update id="mergeMcqiMaster">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.mergeMcqiMaster */
+        MERGE INTO UNIV.MCQI_MASTER TGT
+            USING DUAL ON (TGT.YY = #{yy} AND TGT.ORGID = #{orgid} AND TGT.PFLT_ID = #{pfltId} AND TGT.CQI_DIV_CD = '0001')
+            WHEN MATCHED THEN UPDATE SET LTST_UPD_UID = #{latestUserId}, LTST_UPD_DM = SYSDATE, LTST_UPD_IP = #{remoteAddr}
+            WHEN NOT MATCHED THEN INSERT (YY, ORGID, PFLT_ID, CQI_DIV_CD, INPUT_UID, INPUT_DM, INPUT_IP)
+                VALUES (#{yy}, #{orgid}, #{pfltId}, '0001', #{inputUserId}, SYSDATE, #{remoteAddr})
+    </update>
+    <delete id="deleteMcqiSectForMajor">
+        DELETE FROM UNIV.MCQI_SECT_DSC
+        WHERE YY = #{yy} AND ORGID = #{orgid} AND PFLT_ID = #{pfltId} AND CQI_DIV_CD = '0001'
+          AND CQI_SECT_CD = #{cqiSectCd} AND CQI_TYPE_CD = #{cqiTypeCd} AND CQI_TYPE_CD != '0001'
+    </delete>
+    <insert id="insertMcqiSectForMajor">
+        INSERT INTO UNIV.MCQI_SECT_DSC (YY, ORGID, PFLT_ID, CQI_DIV_CD, CQI_SECT_CD, CQI_TYPE_CD, CHOI_CD, ANS_TYPE_CD, CONT, SORT_ORD, INPUT_UID, INPUT_DM, INPUT_IP)
+        VALUES (#{yy}, #{orgid}, #{pfltId}, '0001', #{cqiSectCd}, #{cqiTypeCd}, #{choiCd}, #{ansTypeCd}, #{cont}, #{sortOrd}, #{inputUserId}, SYSDATE, #{remoteAddr})
+    </insert>
+
+</mapper>
