@@ -16,7 +16,7 @@ public class McqiCompDsc extends Domain {
     private String pfltId;
     private String cqiDivCd;
 
-    private String cqiCompCd;   // 역량 코드 (D1~D10)
+    private String cqiCompCd;   // 역량 코드 (D3_CORE_ABLY_CD: 330,340,350,360,130,140,150,230,240,250)
     private String cqiCompYn;   // 선택 여부 (Y/N)
 
     public String getYy() { return yy; }
