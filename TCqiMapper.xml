@@ -207,66 +207,8 @@
 
     <select id="findMcqiContDscList" resultType="CamelCaseMap">
         /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiContDscList
-        - 기준: MCQI_MASTER + MCQI_COMP_DSC
-        - 올해 값 없으면 전년도 D1~D10 이월 */
-        WITH CUR_COMP AS (
-        SELECT YY,
-        ORGID,
-        PFLT_ID,
-        CQI_COMP_CD,
-        CQI_COMP_YN
-        FROM UNIV.MCQI_COMP_DSC
-        WHERE YY         = #{yy}
-        <if test="pfltId != null">
-            AND PFLT_ID    = #{pfltId}
-        </if>
-        AND CQI_DIV_CD = '0001'
-        ),
-        PREV_COMP AS (
-        SELECT YY,
-        ORGID,
-        PFLT_ID,
-        CQI_COMP_CD,
-        CQI_COMP_YN
-        FROM UNIV.MCQI_COMP_DSC
-        WHERE YY         = TO_CHAR(TO_NUMBER(#{yy}) - 1)
-        <if test="pfltId != null">
-            AND PFLT_ID    = #{pfltId}
-        </if>
-        AND CQI_DIV_CD = '0001'
-        ),
-        CUR_AGG AS (
-        SELECT ORGID,
-        MAX(CASE WHEN CQI_COMP_CD = '330' THEN CQI_COMP_YN END) AS D1_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '340' THEN CQI_COMP_YN END) AS D2_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '350' THEN CQI_COMP_YN END) AS D3_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '360' THEN CQI_COMP_YN END) AS D4_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '130' THEN CQI_COMP_YN END) AS D5_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '140' THEN CQI_COMP_YN END) AS D6_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '150' THEN CQI_COMP_YN END) AS D7_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '230' THEN CQI_COMP_YN END) AS D8_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '240' THEN CQI_COMP_YN END) AS D9_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '250' THEN CQI_COMP_YN END) AS D10_YN,
-        -- 올해 하나라도 값이 있는지 여부
-        SUM(CASE WHEN CQI_COMP_YN IS NOT NULL THEN 1 ELSE 0 END) AS CUR_CNT
-        FROM CUR_COMP
-        GROUP BY ORGID
-        ),
-        PREV_AGG AS (
-        SELECT ORGID,
-        MAX(CASE WHEN CQI_COMP_CD = '330' THEN CQI_COMP_YN END) AS D1_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '340' THEN CQI_COMP_YN END) AS D2_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '350' THEN CQI_COMP_YN END) AS D3_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '360' THEN CQI_COMP_YN END) AS D4_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '130' THEN CQI_COMP_YN END) AS D5_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '140' THEN CQI_COMP_YN END) AS D6_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '150' THEN CQI_COMP_YN END) AS D7_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '230' THEN CQI_COMP_YN END) AS D8_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '240' THEN CQI_COMP_YN END) AS D9_YN,
-        MAX(CASE WHEN CQI_COMP_CD = '250' THEN CQI_COMP_YN END) AS D10_YN
-        FROM PREV_COMP
-        GROUP BY ORGID
-        )
+        - 기준: 조직정보 + MCQI_MASTER 상태
+        - 역량 데이터(compYnXXX)는 findMcqiCompRawList 로 별도 조회 후 Controller에서 동적 pivot 처리 */
         SELECT
         #{yy}                                              AS YY
         , CO.DEPT_LOCT_CD
@@ -275,17 +217,6 @@
         , CBO.DPMT_NM
         , CO.ORGID
         , CO.ORGZ_NM
-        -- 올해 값이 하나도 없으면(CUR_CNT=0) 전년도 값 사용, 있으면 올해 값 사용
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D1_YN  ELSE CA.D1_YN  END AS D1_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D2_YN  ELSE CA.D2_YN  END AS D2_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D3_YN  ELSE CA.D3_YN  END AS D3_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D4_YN  ELSE CA.D4_YN  END AS D4_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D5_YN  ELSE CA.D5_YN  END AS D5_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D6_YN  ELSE CA.D6_YN  END AS D6_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D7_YN  ELSE CA.D7_YN  END AS D7_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D8_YN  ELSE CA.D8_YN  END AS D8_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D9_YN  ELSE CA.D9_YN  END AS D9_YN
-        , CASE WHEN NVL(CA.CUR_CNT,0) = 0 THEN PA.D10_YN ELSE CA.D10_YN END AS D10_YN
         -- Master 제출/마감 상태
         , NVL(MM.SUBMIT_YN, 'N')                             AS SUBMIT_YN
         , MM.SUBMIT_UID
@@ -305,8 +236,6 @@
         #{acsAlRngCd}))
         ) FOA
         ON CO.ORGID = FOA.ORGID
-        LEFT JOIN CUR_AGG  CA ON CA.ORGID = CO.ORGID
-        LEFT JOIN PREV_AGG PA ON PA.ORGID = CO.ORGID
         LEFT JOIN UNIV.MCQI_MASTER MM
         ON MM.YY         = #{yy}
         AND MM.ORGID      = CO.ORGID
@@ -318,6 +247,37 @@
         AND  CBO.DPMT_CD      = #{dpmtCd}
         AND  CO.ORGID         = #{mjCd}
         AND  CO.DEPT_LOCT_CD  = #{deptLoctCd}
+    </select>
+
+    <select id="findMcqiCompRawList" resultType="CamelCaseMap">
+        /* kr.dku.univ.mcqi.tcqi.repository.TcqiMapper.findMcqiCompRawList
+        - 올해 데이터 있으면 올해, 없으면 전년도 이월 (ORGID 단위)
+        - CQI_COMP_CD 값 그대로 반환 → Controller에서 d3CoreAblyBssList 순서로 동적 pivot */
+        WITH CUR_COMP AS (
+            SELECT ORGID, CQI_COMP_CD, CQI_COMP_YN
+            FROM UNIV.MCQI_COMP_DSC
+            WHERE YY         = #{yy}
+            <if test="pfltId != null">
+                AND PFLT_ID  = #{pfltId}
+            </if>
+            AND CQI_DIV_CD = '0001'
+        ),
+        PREV_COMP AS (
+            SELECT ORGID, CQI_COMP_CD, CQI_COMP_YN
+            FROM UNIV.MCQI_COMP_DSC
+            WHERE YY         = TO_CHAR(TO_NUMBER(#{yy}) - 1)
+            <if test="pfltId != null">
+                AND PFLT_ID  = #{pfltId}
+            </if>
+            AND CQI_DIV_CD = '0001'
+        ),
+        CUR_ORGIDS AS (
+            SELECT DISTINCT ORGID FROM CUR_COMP
+        )
+        SELECT ORGID, CQI_COMP_CD, CQI_COMP_YN FROM CUR_COMP
+        UNION ALL
+        SELECT ORGID, CQI_COMP_CD, CQI_COMP_YN FROM PREV_COMP
+        WHERE ORGID NOT IN (SELECT ORGID FROM CUR_ORGIDS)
     </select>
 
     <update id="mergeMcqiContDsc">

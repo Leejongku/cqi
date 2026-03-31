@@ -188,6 +188,9 @@ public interface TcqiMapper {
     List<CamelCaseMap> findMcqiSectListAll(TcqiSearch tcqiSearch);
     /** 전공 전년도 영역답변 이월 조회 */
     List<CamelCaseMap> findMcqiPrevSectList(TcqiSearch tcqiSearch);
+
+    /** 전공 역량 raw 데이터 조회 (올해 없으면 전년도 이월, pivot 없음 - Controller 동적 pivot용) */
+    List<CamelCaseMap> findMcqiCompRawList(TcqiSearch tcqiSearch);
     /** 전공 MCQI_MASTER UPSERT */
     void mergeMcqiMaster(TcqiSearch tcqiSearch);
     /** 전공 영역답변 삭제 SECT+TYPE 단위 */

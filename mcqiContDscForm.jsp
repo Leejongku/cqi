@@ -16,6 +16,8 @@
 <c:set var="hasFirstRow" value="${!empty mcqiContDscList}"/>
 
 <script type="text/javascript">
+  /* 역량코드 목록 - d3CoreAblyBssList 순서와 동일 (동적으로 서버에서 생성) */
+  var D3_ABLY_CODES = [<c:forEach var="ably" items="${d3CoreAblyBssList}" varStatus="st">"${fn:escapeXml(ably.d3CoreAblyCd)}"<c:if test="${!st.last}">,</c:if></c:forEach>];
   var relatWokCd, acsAlRngCd, pgmId;
   $(document).ready(function() {
     // 최초 진입 시 탭 클릭 잠금(조회 완료 후 해제)
@@ -347,15 +349,15 @@
             success: function(dm) {
               if (dm && dm.msg && dm.msg !== "") { alert(dm.msg); return; }
           var compList = [];
-          for (var i = 1; i <= 10; i++) {
+          D3_ABLY_CODES.forEach(function(cd) {
             compList.push({
               yy: yy,
               orgid: orgid,
               cqiDivCd: "0001",
-              cqiCompCd: "D" + i,
-              cqiCompYn: $("#mcqiContDscList input[name='d" + i + "Yn']").is(":checked") ? "Y" : "N"
+              cqiCompCd: cd,
+              cqiCompYn: $("#mcqiContDscList input[name='compYn_" + cd + "']").is(":checked") ? "Y" : "N"
             });
-          }
+          });
           $.ajax({ dataType: "json", type: "post", url: _ctx + "/univ/mcqi/mcqi/saveMcqiComp.do", contentType: "application/json; charset=UTF-8", data: JSON.stringify({ compList: compList }),
             success: function(d2) {
               if (d2 && d2.msg && d2.msg !== "") { alert(d2.msg); return; }
@@ -381,7 +383,7 @@
     },
     submit: function() {
       var d = [];
-      for (var i = 1; i <= 10; i++) { if ($("#mcqiContDscList input[name='d" + i + "Yn']").is(":checked")) { d.push(true); break; } }
+      D3_ABLY_CODES.forEach(function(cd) { if (d.length === 0 && $("#mcqiContDscList input[name='compYn_" + cd + "']").is(":checked")) { d.push(true); } });
       if (d.length === 0) { alert("0. 학과 역량 설정에서 항목을 선택해 주세요."); return; }
       if (typeof MCQI.S === "function") { MCQI.S(); }
       var sectList = (typeof MCQI._collectList === "function") ? MCQI._collectList() : [];
@@ -405,15 +407,15 @@
             success: function(dm) {
               if (dm && dm.msg && dm.msg !== "") { alert(dm.msg); return; }
           var compList = [];
-          for (var i = 1; i <= 10; i++) {
+          D3_ABLY_CODES.forEach(function(cd) {
             compList.push({
               yy: yy,
               orgid: orgid,
               cqiDivCd: "0001",
-              cqiCompCd: "D" + i,
-              cqiCompYn: $("#mcqiContDscList input[name='d" + i + "Yn']").is(":checked") ? "Y" : "N"
+              cqiCompCd: cd,
+              cqiCompYn: $("#mcqiContDscList input[name='compYn_" + cd + "']").is(":checked") ? "Y" : "N"
             });
-          }
+          });
           $.ajax({ dataType: "json", type: "post", url: _ctx + "/univ/mcqi/mcqi/saveMcqiComp.do", contentType: "application/json; charset=UTF-8", data: JSON.stringify({ compList: compList }),
             success: function(d2) {
               if (d2 && d2.msg && d2.msg !== "") { alert(d2.msg); return; }
@@ -590,83 +592,56 @@
             <thead>
               <tr>
                 <th colspan="3">학과/전공 정보</th>
-                <th colspan="4">D3 핵심가치(능동)</th>
-                <th colspan="3">D3 핵심가치(혁신)</th>
-                <th colspan="3">D3 핵심가치(헌신)</th>
-                <th colspan="1" rowspan="2">변경<br/>사유</th>
+                <th colspan="${fn:length(d3CoreAblyBssList)}">D3 핵심역량</th>
+                <th>변경<br/>사유</th>
               </tr>
               <tr>
                 <th>캠퍼스</th>
                 <th>단과대학</th>
                 <th>학과/전공</th>
-                <th>자기주도</th>
-                <th>지식활용</th>
-                <th>논리적<br/>사고</th>
-                <th>의사소통</th>
-                <th>창의적<br/>문제해결</th>
-                <th>도전</th>
-                <th>지식융합</th>
-                <th>세계시민</th>
-                <th>상호협력</th>
-                <th>공동체</th>
+                <c:forEach var="ably" items="${d3CoreAblyBssList}">
+                  <th>${fn:escapeXml(ably.d3CoreAblyNm)}</th>
+                </c:forEach>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              <c:set var="d1Yn" value="N"/><c:set var="d2Yn" value="N"/><c:set var="d3Yn" value="N"/><c:set var="d4Yn" value="N"/><c:set var="d5Yn" value="N"/>
-              <c:set var="d6Yn" value="N"/><c:set var="d7Yn" value="N"/><c:set var="d8Yn" value="N"/><c:set var="d9Yn" value="N"/><c:set var="d10Yn" value="N"/>
-              <c:forEach var="comp" items="${mcqiCompList}">
-                <c:if test="${comp.cqiCompCd eq 'D1' and comp.cqiCompYn eq 'Y'}"><c:set var="d1Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D2' and comp.cqiCompYn eq 'Y'}"><c:set var="d2Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D3' and comp.cqiCompYn eq 'Y'}"><c:set var="d3Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D4' and comp.cqiCompYn eq 'Y'}"><c:set var="d4Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D5' and comp.cqiCompYn eq 'Y'}"><c:set var="d5Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D6' and comp.cqiCompYn eq 'Y'}"><c:set var="d6Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D7' and comp.cqiCompYn eq 'Y'}"><c:set var="d7Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D8' and comp.cqiCompYn eq 'Y'}"><c:set var="d8Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D9' and comp.cqiCompYn eq 'Y'}"><c:set var="d9Yn" value="Y"/></c:if>
-                <c:if test="${comp.cqiCompCd eq 'D10' and comp.cqiCompYn eq 'Y'}"><c:set var="d10Yn" value="Y"/></c:if>
-              </c:forEach>
               <c:choose>
                 <c:when test="${!empty mcqiContDscList}">
+                  <%-- mcqiContDscList: Controller에서 compYn{역량코드} 키로 동적 pivot 주입됨 --%>
                   <c:forEach var="row" items="${mcqiContDscList}">
                     <tr>
                       <td class="ta_c">${fn:escapeXml(row.deptLoctNm)}</td>
                       <td class="ta_c">${fn:escapeXml(row.dpmtNm)}</td>
                       <td class="ta_l">${fn:escapeXml(row.orgzNm)}</td>
-                      <td class="ta_c"><input type="checkbox" name="d1Yn"  <c:if test="${row.d1Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d2Yn"  <c:if test="${row.d2Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d3Yn"  <c:if test="${row.d3Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d4Yn"  <c:if test="${row.d4Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d5Yn"  <c:if test="${row.d5Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d6Yn"  <c:if test="${row.d6Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d7Yn"  <c:if test="${row.d7Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d8Yn"  <c:if test="${row.d8Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d9Yn"  <c:if test="${row.d9Yn  eq 'Y'}">checked</c:if> /></td>
-                      <td class="ta_c"><input type="checkbox" name="d10Yn" <c:if test="${row.d10Yn eq 'Y'}">checked</c:if> /></td>
+                      <c:forEach var="ably" items="${d3CoreAblyBssList}">
+                        <c:set var="compKey" value="compYn${ably.d3CoreAblyCd}"/>
+                        <td class="ta_c"><input type="checkbox" name="compYn_${ably.d3CoreAblyCd}" <c:if test="${row[compKey] eq 'Y'}">checked</c:if> /></td>
+                      </c:forEach>
                       <td class="ta_c"><textarea name="rmk" id="rmk" rows="2" class="lcqi-subj">${fn:escapeXml(row.rmk)}</textarea></td>
                     </tr>
                   </c:forEach>
                 </c:when>
                 <c:when test="${empty mcqiContDscList and !empty mcqiCompList}">
+                  <%-- 신규 입력: mcqiCompList(저장된 역량) 기준으로 체크 상태 초기화 --%>
                   <tr>
                     <td class="ta_c">${fn:escapeXml(tcqiSearch.deptLoctCd)}</td>
                     <td class="ta_c">${fn:escapeXml(tcqiSearch.dpmtCd)}</td>
                     <td class="ta_l">${fn:escapeXml(tcqiSearch.orgid)}</td>
-                    <td class="ta_c"><input type="checkbox" name="d1Yn" <c:if test="${d1Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d2Yn" <c:if test="${d2Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d3Yn" <c:if test="${d3Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d4Yn" <c:if test="${d4Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d5Yn" <c:if test="${d5Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d6Yn" <c:if test="${d6Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d7Yn" <c:if test="${d7Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d8Yn" <c:if test="${d8Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d9Yn" <c:if test="${d9Yn eq 'Y'}">checked</c:if> /></td>
-                    <td class="ta_c"><input type="checkbox" name="d10Yn" <c:if test="${d10Yn eq 'Y'}">checked</c:if> /></td>
+                    <c:forEach var="ably" items="${d3CoreAblyBssList}">
+                      <c:set var="ablyYn" value="N"/>
+                      <c:forEach var="comp" items="${mcqiCompList}">
+                        <c:if test="${comp.cqiCompCd eq ably.d3CoreAblyCd and comp.cqiCompYn eq 'Y'}">
+                          <c:set var="ablyYn" value="Y"/>
+                        </c:if>
+                      </c:forEach>
+                      <td class="ta_c"><input type="checkbox" name="compYn_${ably.d3CoreAblyCd}" <c:if test="${ablyYn eq 'Y'}">checked</c:if> /></td>
+                    </c:forEach>
                     <td class="ta_c"><textarea name="rmk" id="rmk" rows="2" class="lcqi-subj"></textarea></td>
                   </tr>
                 </c:when>
                 <c:otherwise>
-                  <tr><td class="ta_c" colspan="14">조회된 데이터가 없습니다.</td></tr>
+                  <tr><td class="ta_c" colspan="${3 + fn:length(d3CoreAblyBssList) + 1}">조회된 데이터가 없습니다.</td></tr>
                 </c:otherwise>
               </c:choose>
             </tbody>

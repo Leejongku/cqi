@@ -375,6 +375,11 @@ public class TcqiServiceImpl extends BaseService implements TcqiService {
         return tcqiMapper.findMcqiPrevSectList(tcqiSearch);
     }
     @Override
+    public List<CamelCaseMap> findMcqiCompRawList(TcqiSearch tcqiSearch) {
+        return tcqiMapper.findMcqiCompRawList(tcqiSearch);
+    }
+
+    @Override
     public void saveMcqiSectList(TcqiSearch tcqiSearch, List<McqiSectDsc> sectList) {
         CamelCaseMap master = tcqiMapper.findMcqiMasterMap(tcqiSearch);
         if (master != null) {

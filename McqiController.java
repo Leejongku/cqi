@@ -177,8 +177,44 @@ public class McqiController extends BaseController {
         d3CoreAblyBss.setCoreTypCd("2"); /*2가 전공*/
         d3CoreAblyBss.setPrtYn("1");  /*역량코드*/
 
-        model.addAttribute("d3CoreAblyBssList", ccmgService.findCoreBssAblyList(d3CoreAblyBss)); /*역량동적으로 가져오기 위해*/
-        model.addAttribute("mcqiContDscList", tcqiService.findMcqiContDscList(tcqiSearch));
+        // 역량 기준 목록 조회 (화면 컬럼 헤더 + 동적 pivot 키 생성용)
+        List<CamelCaseMap> d3CoreAblyBssList = ccmgService.findCoreBssAblyList(d3CoreAblyBss);
+        model.addAttribute("d3CoreAblyBssList", d3CoreAblyBssList);
+
+        // 조직+마스터 목록 조회
+        List<CamelCaseMap> mcqiContDscList = tcqiService.findMcqiContDscList(tcqiSearch);
+
+        // 역량 raw 데이터 조회 후 동적 pivot: compYn{역량코드} 키로 각 행에 주입
+        // → 역량코드가 매년 바뀌어도 코드 수정 불필요
+        try {
+            List<String> ablyCodes = new java.util.ArrayList<String>();
+            for (CamelCaseMap m : d3CoreAblyBssList) {
+                if (m.get("d3CoreAblyCd") != null) ablyCodes.add(m.get("d3CoreAblyCd").toString());
+            }
+            if (!ablyCodes.isEmpty()) {
+                List<CamelCaseMap> compRawList = tcqiService.findMcqiCompRawList(tcqiSearch);
+                java.util.Map<String, java.util.Map<String, String>> compByOrg =
+                    new java.util.HashMap<String, java.util.Map<String, String>>();
+                for (CamelCaseMap raw : compRawList) {
+                    String oid  = raw.get("orgid")      != null ? raw.get("orgid").toString()      : "";
+                    String code = raw.get("cqiCompCd")  != null ? raw.get("cqiCompCd").toString()  : "";
+                    String yn   = raw.get("cqiCompYn")  != null ? raw.get("cqiCompYn").toString()  : "N";
+                    if (!compByOrg.containsKey(oid)) compByOrg.put(oid, new java.util.HashMap<String, String>());
+                    compByOrg.get(oid).put(code, yn);
+                }
+                for (CamelCaseMap row : mcqiContDscList) {
+                    String oid = row.get("orgid") != null ? row.get("orgid").toString() : "";
+                    java.util.Map<String, String> compMap = compByOrg.containsKey(oid)
+                        ? compByOrg.get(oid) : new java.util.HashMap<String, String>();
+                    for (String code : ablyCodes) {
+                        row.put("compYn" + code, compMap.containsKey(code) ? compMap.get(code) : "N");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("[McqiController] 역량 동적 pivot 실패: {}", e.getMessage());
+        }
+        model.addAttribute("mcqiContDscList", mcqiContDscList);
         model.addAttribute("tcqiSearch", tcqiSearch);
         model.addAttribute("cnt", findSchedCnt(tcqiSearch, userDetails, BASE_WOK_ID_251));
 

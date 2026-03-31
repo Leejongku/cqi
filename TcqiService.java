@@ -171,4 +171,7 @@ public interface TcqiService {
     List<CamelCaseMap> findMcqiPrevSectList(TcqiSearch tcqiSearch);
     /** 전공 CQI 영역답변 저장 (TYPE=0001 저장 금지) */
     void saveMcqiSectList(TcqiSearch tcqiSearch, List<McqiSectDsc> sectList);
+
+    /** 전공 역량 raw 데이터 조회 (올해 없으면 전년도 이월, pivot 없음 - Controller 동적 pivot용) */
+    List<CamelCaseMap> findMcqiCompRawList(TcqiSearch tcqiSearch);
 }
