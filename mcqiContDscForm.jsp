@@ -615,7 +615,7 @@
                       <td class="ta_c">${fn:escapeXml(row.dpmtNm)}</td>
                       <td class="ta_l">${fn:escapeXml(row.orgzNm)}</td>
                       <c:forEach var="ably" items="${d3CoreAblyBssList}">
-                        <c:set var="compKey" value="compYn${ably.d3CoreAblyCd}"/>
+                        <c:set var="compKey" value="compyn${ably.d3CoreAblyCd}"/>
                         <td class="ta_c"><input type="checkbox" name="compYn_${ably.d3CoreAblyCd}" <c:if test="${row[compKey] eq 'Y'}">checked</c:if> /></td>
                       </c:forEach>
                       <td class="ta_c"><textarea name="rmk" id="rmk" rows="2" class="lcqi-subj">${fn:escapeXml(row.rmk)}</textarea></td>

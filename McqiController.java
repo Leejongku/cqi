@@ -207,7 +207,7 @@ public class McqiController extends BaseController {
                     java.util.Map<String, String> compMap = compByOrg.containsKey(oid)
                         ? compByOrg.get(oid) : new java.util.HashMap<String, String>();
                     for (String code : ablyCodes) {
-                        row.put("compYn" + code, compMap.containsKey(code) ? compMap.get(code) : "N");
+                        row.put("compyn" + code, compMap.containsKey(code) ? compMap.get(code) : "N");
                     }
                 }
             }
