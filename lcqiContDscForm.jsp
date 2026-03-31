@@ -303,8 +303,8 @@
 (function() {
   "use strict";
   var CH = JSON.parse((document.getElementById("lcqi_choi_json") || {}).textContent || "[]")
-              .filter(function(c) { return !(c.cd === "C007" || (c.nm && c.nm.indexOf("비고") >= 0)); });
-  var ETC_CD = (function() { var x = CH.filter(function(c) { return c.cd === "C006" || (c.nm && c.nm.indexOf("기타") >= 0); }); return x.length ? x[0].cd : null; })();
+              .filter(function(c) { return !(c.cd === "C107" || (c.nm && c.nm.indexOf("비고") >= 0)); });
+  var ETC_CD = (function() { var x = CH.filter(function(c) { return c.cd === "C106" || (c.nm && c.nm.indexOf("기타") >= 0); }); return x.length ? x[0].cd : null; })();
   // 공통코드 기반 동적 탭/행
   var SECTS = JSON.parse((document.getElementById("lcqi_sects_json") || {}).textContent || "[]");
   var TYPES = JSON.parse((document.getElementById("lcqi_types_json") || {}).textContent || "[]");
@@ -439,7 +439,7 @@
     var chkd = rows
       .filter(function(r) { return r.ansTypeCd === "OBJ" || (ETC_CD && r.choiCd === ETC_CD); })
       .map(function(r) { return r.choiCd; });
-    var sj = rows.find(function(r) { return r.ansTypeCd === "SUBJ" && r.choiCd === "C007"; });
+    var sj = rows.find(function(r) { return r.ansTypeCd === "SUBJ" && r.choiCd === "C107"; });
     var et = ETC_CD ? rows.find(function(r) { return r.choiCd === ETC_CD; }) : null;
     var ds = disabled ? " disabled" : "";
     var dc = disabled ? " lcqi-d lf-d" : "";
@@ -520,7 +520,7 @@
       var ta = this;
       if (!ta.dataset.sect || !ta.dataset.type || isPrevTy(ta.dataset.type)) return;
       if (!ta.value.trim()) return;
-      list.push({ yy: S.yy, orgid: S.orgid, pfltId: S.pfltId, cqiDivCd: "0002", cqiSectCd: ta.dataset.sect, cqiTypeCd: ta.dataset.type, choiCd: "C007", ansTypeCd: "SUBJ", cont: ta.value.trim(), sortOrd: "0" });
+      list.push({ yy: S.yy, orgid: S.orgid, pfltId: S.pfltId, cqiDivCd: "0002", cqiSectCd: ta.dataset.sect, cqiTypeCd: ta.dataset.type, choiCd: "C107", ansTypeCd: "SUBJ", cont: ta.value.trim(), sortOrd: "0" });
     });
     return list;
   }

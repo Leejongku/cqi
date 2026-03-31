@@ -751,7 +751,7 @@
       var el = document.getElementById("mc_" + sc + "_" + ty);
       if (!el) return;
       var chkd = rows
-        .filter(function(r) { return r.ansTypeCd === "OBJ" || (ETC_CD && r.choiCd === ETC_CD); })
+        .filter(function(r) { return r.ansTypeCd === "OBJ"; })
         .map(function(r) { return r.choiCd; });
       var sj = rows.find(function(r) { return r.ansTypeCd === "SUBJ" && r.choiCd === "C007"; });
       var et = ETC_CD ? rows.find(function(r) { return r.choiCd === ETC_CD; }) : null;
@@ -789,7 +789,7 @@
       $(".mcqi-tbl input[type=checkbox]:checked").each(function() {
         var cb = this;
         if (!cb.dataset.sect || !cb.dataset.type || cb.dataset.type === "0001") return;
-        var row = { yy: S.yy, orgid: S.orgid, pfltId: S.pfltId, cqiDivCd: "0001", cqiSectCd: cb.dataset.sect, cqiTypeCd: cb.dataset.type, choiCd: cb.dataset.choi || "", ansTypeCd: ((ETC_CD && cb.dataset.choi === ETC_CD) ? "SUBJ" : "OBJ"), cont: "", sortOrd: "0" };
+        var row = { yy: S.yy, orgid: S.orgid, pfltId: S.pfltId, cqiDivCd: "0001", cqiSectCd: cb.dataset.sect, cqiTypeCd: cb.dataset.type, choiCd: cb.dataset.choi || "", ansTypeCd: "OBJ", cont: "", sortOrd: "0" };
         if (cb.dataset.isEtc === "1") {
           var e = document.getElementById("et_" + cb.dataset.sect + "_" + cb.dataset.type);
           if (e) row.cont = e.value.trim();
