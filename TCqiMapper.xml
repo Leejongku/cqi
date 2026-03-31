@@ -293,6 +293,7 @@
         , NVL(MM.CLOSE_YN, 'N')                              AS CLOSE_YN
         , MM.CLOSE_UID
         , MM.CLOSE_DM
+        , RMK
         FROM   COMM.COMM_ORGZ      CO
         JOIN   COMM.COMM_BACH_ORGZ CBO
         ON CO.ORGID = CBO.ORGID
@@ -471,7 +472,13 @@
         ,CQI_DIV_CD
         ,COMM.FN_CMN_CD('CQI_DIV_CD', CQI_DIV_CD)  AS CQI_DIV_NM
         ,DET_MNGT_DSC_CD
-        ,COMM.FN_CMN_CD('DET_MNGT_DSC_CD', DET_MNGT_DSC_CD) AS DET_MNGT_DSC_NM
+        ,(    select pcond_nm
+                FROM univ.srec_bach_cmn_pcond_dsc sbcp
+               where 1=1
+                 AND sbcp.use_yn = '1'
+                 AND sbcp.pcond_ty_cd = '0001'
+                 AND sbcp.pgm_id = '3316'
+                 and sbcp.parm_cont = DET_MNGT_DSC_CD) AS DET_MNGT_DSC_NM
         ,PFLT_ID
         ,PFLT_ID AS before_Pflt_Id
         ,VEI.MEM_PSTN_NM as orgz_Nm

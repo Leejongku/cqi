@@ -14,6 +14,8 @@ import kr.dku.base.servlet.BaseController;
 import kr.dku.base.util.CamelCaseMap;
 import kr.dku.comm.syst.cdmg.service.CodeService;
 import kr.dku.comm.syst.cdmg.web.CommCodeDataSearch;
+import kr.dku.univ.lssn.ccmg.domain.D3CoreAblyBss;
+import kr.dku.univ.lssn.ccmg.service.CcmgService;
 import kr.dku.univ.mcqi.mcqi.domain.McqiListWrapper;
 import kr.dku.univ.mcqi.mcqi.service.McqiService;
 import kr.dku.univ.mcqi.tcqi.domain.McqiCompDsc;
@@ -72,6 +74,9 @@ public class McqiController extends BaseController {
     private BmgtService bmgtService;
     private TcqiService tcqiService;
     private CodeService codeService;
+
+    @Autowired
+    private CcmgService ccmgService;
 
     @Autowired
     public void setMcqiService(McqiService mcqiService) {
@@ -157,6 +162,8 @@ public class McqiController extends BaseController {
             tcqiSearch.setDeptLoctCd(userDetails.getDeptLoctCd());
         }
 
+
+
         // 전공 화면에서는 orgid(저장/조회 키)를 전공코드(mjCd)로 사용한다. (mcqiContDscForm.jsp hidden orgid)
         try {
             if ((tcqiSearch.getOrgid() == null || tcqiSearch.getOrgid().isEmpty())
@@ -164,7 +171,13 @@ public class McqiController extends BaseController {
                 tcqiSearch.setOrgid(tcqiSearch.getMjCd());
             }
         } catch (Exception ignore) { }
+        D3CoreAblyBss  d3CoreAblyBss   = new D3CoreAblyBss();
+        d3CoreAblyBss.setFrYy(tcqiSearch.getYy());
+        d3CoreAblyBss.setFrSemCd("1");
+        d3CoreAblyBss.setCoreTypCd("2"); /*2가 전공*/
+        d3CoreAblyBss.setPrtYn("1");  /*역량코드*/
 
+        model.addAttribute("d3CoreAblyBssList", ccmgService.findCoreBssAblyList(d3CoreAblyBss)); /*역량동적으로 가져오기 위해*/
         model.addAttribute("mcqiContDscList", tcqiService.findMcqiContDscList(tcqiSearch));
         model.addAttribute("tcqiSearch", tcqiSearch);
         model.addAttribute("cnt", findSchedCnt(tcqiSearch, userDetails, BASE_WOK_ID_251));
