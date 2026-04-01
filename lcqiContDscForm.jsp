@@ -96,10 +96,27 @@
       LF.save({ afterTab: (LF.currentTabIndex ? LF.currentTabIndex() : 0) });
     });
 
-    // detMngtDscCd(교양구분)는 서버 매핑값을 사용하며, 콤보 변경 불가
-    $("#lfPfltId").prop("disabled", true);
-    if ($("#lfPfltId").hasClass("chosen-select") && $("#lfPfltId").trigger) {
-      $("#lfPfltId").trigger("chosen:updated");
+    // detMngtDscCd(교양구분) - 1건이면 변경 불가, 다건이면 선택 가능
+    var detMngtDscCdLocked = <c:choose><c:when test="${detMngtDscCdLocked != null && !detMngtDscCdLocked}">false</c:when><c:otherwise>true</c:otherwise></c:choose>;
+    if (detMngtDscCdLocked) {
+      $("#lfPfltId").prop("disabled", true);
+      if ($("#lfPfltId").hasClass("chosen-select")) $("#lfPfltId").trigger("chosen:updated");
+    } else {
+      $("#lfPfltId").prop("disabled", false);
+      if ($("#lfPfltId").hasClass("chosen-select")) $("#lfPfltId").trigger("chosen:updated");
+      $("#lfPfltId").on("change", function() {
+        var selectedCd = $(this).val();
+        $("#detMngtDscCd").val(selectedCd);
+        if (S && S.loaded) {
+          if (confirm("교양구분을 변경하면 재조회됩니다. 계속하시겠습니까?")) {
+            LF.search();
+          } else {
+            $(this).val(S.detMngtDscCd);
+            if ($(this).hasClass("chosen-select")) $(this).trigger("chosen:updated");
+            $("#detMngtDscCd").val(S.detMngtDscCd);
+          }
+        }
+      });
     }
 
     var periodCheck = "${cnt}";
@@ -187,9 +204,21 @@
           <td>
             <div class="form_select form_required" style="width:185px;">
               <select id="lfPfltId" title="교양구분" class="chosen-select" disabled="disabled">
-                <option value="${fn:escapeXml(tcqiSearch.detMngtDscCd)}" selected="selected">
-                  ${fn:escapeXml(detMngtDscNm)}
-                </option>
+                <c:choose>
+                  <c:when test="${!empty detMngtDscOptions}">
+                    <c:forEach var="opt" items="${detMngtDscOptions}">
+                      <option value="${fn:escapeXml(opt.cd)}"
+                              ${opt.cd eq tcqiSearch.detMngtDscCd ? 'selected="selected"' : ''}>
+                        ${fn:escapeXml(opt.nm)}
+                      </option>
+                    </c:forEach>
+                  </c:when>
+                  <c:otherwise>
+                    <option value="${fn:escapeXml(tcqiSearch.detMngtDscCd)}" selected="selected">
+                      ${fn:escapeXml(detMngtDscNm)}
+                    </option>
+                  </c:otherwise>
+                </c:choose>
               </select>
               <input type="hidden" id="detMngtDscCd" name="detMngtDscCd" value="${fn:escapeXml(tcqiSearch.detMngtDscCd)}" />
             </div>

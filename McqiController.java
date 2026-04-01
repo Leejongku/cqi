@@ -474,10 +474,10 @@ public class McqiController extends BaseController {
 
         String mappedDetMngtDscCd = null;
         String mappedDetMngtDscNm = null;
+        List<java.util.Map<String, String>> detMngtDscOptions = new java.util.ArrayList<>();
         try {
             List<CamelCaseMap> ascList = tcqiService.findMcqiPfltAscDsc(tcqiSearch);
             if (ascList != null && !ascList.isEmpty()) {
-                CamelCaseMap firstLcqiRow = null;
                 for (CamelCaseMap row : ascList) {
                     if (row == null) continue;
                     String cqiDivCd = row.get("cqiDivCd") != null ? String.valueOf(row.get("cqiDivCd"))
@@ -491,24 +491,18 @@ public class McqiController extends BaseController {
                     String detNm = row.get("detMngtDscNm") != null ? String.valueOf(row.get("detMngtDscNm"))
                             : (row.get("det_mngt_dsc_nm") != null ? String.valueOf(row.get("det_mngt_dsc_nm")) : null);
 
-                    // cqi_div_cd 컬럼이 누락된 조회도 있어 null은 통과시킨다.
                     boolean lcqiRow = (cqiDivCd == null || "".equals(cqiDivCd) || LCQI_DIV_CD.equals(cqiDivCd));
                     if (!lcqiRow) continue;
-                    if (firstLcqiRow == null && detCd != null && !"".equals(detCd)) {
-                        firstLcqiRow = row;
-                    }
                     if (loginUid != null && loginUid.equals(pfltId) && detCd != null && !"".equals(detCd)) {
-                        mappedDetMngtDscCd = detCd;
-                        mappedDetMngtDscNm = detNm;
-                        break;
+                        if (mappedDetMngtDscCd == null) {
+                            mappedDetMngtDscCd = detCd;
+                            mappedDetMngtDscNm = detNm;
+                        }
+                        java.util.Map<String, String> opt = new java.util.LinkedHashMap<>();
+                        opt.put("cd", detCd);
+                        opt.put("nm", detNm != null ? detNm : detCd);
+                        detMngtDscOptions.add(opt);
                     }
-                }
-                // 사용자 키 매칭 실패 시, 교양 행 1건을 fallback 사용
-                if ((mappedDetMngtDscCd == null || "".equals(mappedDetMngtDscCd)) && firstLcqiRow != null) {
-                    mappedDetMngtDscCd = firstLcqiRow.get("detMngtDscCd") != null ? String.valueOf(firstLcqiRow.get("detMngtDscCd"))
-                            : (firstLcqiRow.get("det_mngt_dsc_cd") != null ? String.valueOf(firstLcqiRow.get("det_mngt_dsc_cd")) : null);
-                    mappedDetMngtDscNm = firstLcqiRow.get("detMngtDscNm") != null ? String.valueOf(firstLcqiRow.get("detMngtDscNm"))
-                            : (firstLcqiRow.get("det_mngt_dsc_nm") != null ? String.valueOf(firstLcqiRow.get("det_mngt_dsc_nm")) : null);
                 }
             }
         } catch (Exception e) {
@@ -518,9 +512,24 @@ public class McqiController extends BaseController {
         if (mappedDetMngtDscCd == null || mappedDetMngtDscCd.isEmpty()) {
             model.addAttribute("accessDeniedMsg", "교양CQI 사용자만 화면 접근 가능합니다.");
         } else {
+            // 요청 파라미터로 이미 선택된 값이 있으면 유지 (다건 선택 후 재조회 시)
+            String reqDetCd = tcqiSearch.getDetMngtDscCd();
+            boolean validReq = false;
+            if (reqDetCd != null && !reqDetCd.isEmpty()) {
+                for (java.util.Map<String, String> opt : detMngtDscOptions) {
+                    if (reqDetCd.equals(opt.get("cd"))) { validReq = true; break; }
+                }
+            }
+            if (validReq) {
+                mappedDetMngtDscCd = reqDetCd;
+                for (java.util.Map<String, String> opt : detMngtDscOptions) {
+                    if (reqDetCd.equals(opt.get("cd"))) { mappedDetMngtDscNm = opt.get("nm"); break; }
+                }
+            }
             tcqiSearch.setDetMngtDscCd(mappedDetMngtDscCd);
-            model.addAttribute("detMngtDscCdLocked", true);
             model.addAttribute("detMngtDscNm", mappedDetMngtDscNm != null ? mappedDetMngtDscNm : "");
+            model.addAttribute("detMngtDscOptions", detMngtDscOptions);
+            model.addAttribute("detMngtDscCdLocked", detMngtDscOptions.size() <= 1); // 1건이면 변경 불가
         }
 
         // 화면에서 저장/제출 시 사용할 사용자 정보
